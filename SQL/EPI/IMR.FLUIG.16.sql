@@ -1,3 +1,9 @@
+/*
+TOTVS NORDESTE
+Consultor Especialista: Italo Ribeiro
+Processo de Controle de EPI no Fluig
+*/
+
 SELECT B.CODTIPO,
        B.CODCOLIGADA,
        B.CODFILIAL,
@@ -29,10 +35,14 @@ FROM   PPESSOA A WITH (NOLOCK)
          ON G.CODCOLIGADA = B.CODCOLIGADA
             AND G.CODFILIAL = B.CODFILIAL
        LEFT JOIN (SELECT CODPESSOA,
-                         Count(*) AS QTDEPI
+                         COUNT(*) AS QTDEPI
                   FROM   VEMPRESTIMOEPI
+                  WHERE  
+                  DATADEVOLUCAO IS NULL
+                  AND IDDESCARTE IS NULL
                   GROUP  BY CODPESSOA) X
               ON X.CODPESSOA = B.CODPESSOA
 WHERE  B.CODCOLIGADA = 1
        AND B.CODSITUACAO <> 'D'
-       AND B.CODTIPO = 'N'; 
+       AND B.CODTIPO = 'N'
+       AND B.NOME LIKE '%' +:NOME +'%'
