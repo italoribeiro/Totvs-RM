@@ -1,0 +1,25 @@
+SELECT C.CODIGOPRD,
+       B.CODEPI,
+       B.NOME EPI,
+       B.NOME AS PRODUTO,
+       A.CODIDENTEPI,
+       A.CA,
+       CASE
+         WHEN B.TIPOEQUIPAMENTO = 1 THEN 'EPI'
+         ELSE 'EPC'
+       END    AS TIPO,
+       CASE
+         WHEN B.DESCARTAVEL = 1 THEN 'S'
+         ELSE 'N'
+       END    AS DESCARTAVEL,
+       B.IDPRD,
+       A.IDLOTE,
+       A.CODLOC,
+       A.CODFILIAL
+FROM   VEPI A (NOLOCK)
+       JOIN VCATALOGOEPI B (NOLOCK)
+         ON A.CODCOLIGADA = B.CODCOLIGADA
+            AND A.CODEPI = B.CODEPI
+       JOIN TPRD C (NOLOCK)
+         ON C.IDPRD = B.IDPRD
+WHERE  A.CODCOLIGADA = 1 
