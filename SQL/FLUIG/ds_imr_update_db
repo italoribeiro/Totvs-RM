@@ -1,0 +1,76 @@
+/* Autor: Italo Ribeiro - Consultor Especialista
+ * Data: 12/12/2023
+ * Obs: Consulta contratos
+ * Nao altere autoria desse script, o mesmo encontra-se publicado no Git 
+ */
+
+function createDataset(fields, constraints, sortFields) {
+    var dataset = DatasetBuilder.newDataset();
+    var conn = null;
+    var stmt = null;
+    
+    try {
+        var query = buildQuery();
+        conn = connectDatabase();
+        
+        if (conn) {
+            stmt = conn.createStatement();
+            var rowsAffected = stmt.executeUpdate(query); // Executa o UPDATE
+            
+            if (rowsAffected === 0) {
+                throw new Error("Nenhuma linha foi atualizada.");
+            } else {
+                dataset.addColumn("RESULTADO");
+                dataset.addRow(new Array("Atualização bem-sucedida: " + rowsAffected + " registro(s) atualizado(s)."));
+            }
+        } else {
+            throw new Error("Falha ao conectar ao banco de dados.");
+        }
+    } catch (e) {
+        log.error("Ocorreu um erro: " + e.message);
+        return getDefaultErro(e.toString());
+    } finally {
+        closeResources(null, stmt, conn); // rs não é necessário aqui
+    }
+    
+    return dataset;
+}
+
+function buildQuery() {
+    var query =
+        "UPDATE EVENT_PROCES " +
+        "SET DSL_EVENT = REPLACE(DSL_EVENT, 'throw \"<h2>Processos de prestação de contas não podem ser cancelados.</h2>\"', '') " +
+        "WHERE " +
+        "COD_EMPRESA = 1 " +
+        "AND COD_EVENT = 'beforeCancelProcess' " +
+        "AND COD_DEF_PROCES = 'M2' " +
+        "AND NUM_VERS = 22";
+
+    return query;
+}
+
+function connectDatabase() {
+    var dataSource = "/jdbc/AppDS";
+    var ic = new javax.naming.InitialContext();
+    var ds = ic.lookup(dataSource);
+    return ds.getConnection();
+}
+
+function closeResources(rs, stmt, conn) {
+    if (rs != null) {
+        rs.close();
+    }
+    if (stmt != null) {
+        stmt.close();
+    }
+    if (conn != null) {
+        conn.close();
+    }
+}
+
+function getDefaultErro(e) {
+    var dtsErro = DatasetBuilder.newDataset();
+    dtsErro.addColumn("ERRO");
+    dtsErro.addRow(new Array(e));
+    return dtsErro;
+}
